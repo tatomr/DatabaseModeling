@@ -122,24 +122,21 @@ EventName varchar(100) not null,
 EventDate date not null,
 StartTime time(1) not null,
 EndTime time(1) not null,
-EDescription varchar(1000) not null,
+EventTitle varchar(1000) not null,
+Discription varchar (256) not null, 
 Comments varchar(1000),
 PRIMARY KEY (EventID),
-CONSTRAINT FK_MissingHost FOREIGN KEY (HostID)
-REFERENCES Host (HostID)
+CONSTRAINT FK_Events FOREIGN KEY (HostID) REFERENCES Host (HostID)
 )
 
-CREATE TABLE EventAttendance
+CREATE TABLE MemberEvents
 (
-AttendanceID int not null IDENTITY(1, 1),
 EventID int not null,
 MemberID int not null,
-PresentStatus bit not null,
-PRIMARY KEY (AttendanceID),
-CONSTRAINT FK_MissingEvent FOREIGN KEY (EventID)
-REFERENCES [Events](EventID),
-CONSTRAINT FK_MissingMember FOREIGN KEY (MemberID)
-REFERENCES Members(MemberID)
+Rating smallint not null,
+Feedback varchar (25)
+CONSTRAINT FK_MemberEvents1 FOREIGN KEY (EventID) REFERENCES [Events] (EventID),
+CONSTRAINT FK_MemberEvents2 FOREIGN KEY (MemberID) REFERENCES Members (MemberID)
 )
 
 
@@ -346,16 +343,16 @@ INSERT INTO HostAddress (HostID, AddressLine1, AddressLIne2, City, StateProvince
 			(4, '903 Highway 441', null, 'Ocala', 'Florida', '34470'),
 			(5, '1337 Programming Street', null, 'Ocala', 'Florida', '34470')
 
-INSERT INTO [Events] (HostID, EventName, EventDate, StartTime, EndTime, EDescription, Comments)
-	VALUES ('1',	'The History of Human Emotions',	'2017-01-12',	'12:00',	'2:00',	'History of human emotions',	'This will be fun'),
-('2',	'How Great Leaders Inspire Action',	'2017-02-22',	'12:00',	'1:00',	'How great leaders inspire action',	'Helpful class and inspiration'),
-('3',	'The Puzzle of Motivation',	'2017-03-05',	'12:00',	'3:00',	'Motivational',	'Motivate people'),
-('4',	'Your Elusive Creative Genius',	'2017-04-16',	'12:00',	'2:00',	'Learn to become a genius!',	'Thinking Skills'),
-('5',	'Why are Programmers So Smart?',	'2017-05-01',	'12:00',	'2:30',	'Overview of how smart programmers are',	'Programmers are awesome')
+INSERT INTO [Events] (HostID, EventName, EventDate, StartTime, EndTime, EventTitle, Discription, Comments)
+	VALUES ('1',	'The History of Human Emotions',	'2017-01-12',	'12:00',	'2:00',	'History of human emotions',' A brief view of Westen Philosophy of Emotions', 'I was impressed with Plato''s philosophy of human emotions'),
+('2',	'How Great Leaders Inspire Action',	'2017-02-22',	'12:00',	'1:00',	'How great leaders inspire action', 'I introdution to critical business skill for the 21 century','I thought the theory on Competative Advantage was an eye opener'),
+('3',	'The Puzzle of Motivation',	'2017-03-05',	'12:00',	'3:00',	'Motivational', 'How to maintain a positive attitude in the face of negative situations', 'Motivate people'),
+('4',	'Your Elusive Creative Genius',	'2017-04-16',	'12:00',	'2:00',	'Learn to become a genius!', 'A brief intoroduction into Aristotle''s Logic Methods', 'Thinking Skills'),
+('5',	'Why are Programmers So Smart?',	'2017-05-01',	'12:00',	'2:30',	'Overview of how smart programmers are', 'An introduction to skills needed for success in a programming career','Programmers are awesome')
 
-INSERT INTO EventAttendance (EventID, MemberID, PresentStatus)
-	VALUES	(1, 1, 0),
-			(2, 1, 0),
+INSERT INTO MemberEvents (EventID, MemberID, Rating)
+	VALUES	(1, 1, 1),
+			(2, 1, 1),
 			(3, 1, 1),
 			(4, 1, 1),
 			(5, 1, 1),
@@ -431,34 +428,105 @@ INSERT INTO EventAttendance (EventID, MemberID, PresentStatus)
 			(5, 15, 0)
 
 
---=============================================------------
+                   ------------Views------------------
+
+---A complete contact list for current members
+
 GO
-CREATE VIEW vwMemberContactList
+CREATE VIEW MemberContactList
 AS
-select concat(LastName, ', ', FirstName) [Member Name], ma.AddressLine1, ma.AddressLine2,
-			ma.City, ma.StateProvince, ma.ZipCode, m.Phone, m.Email
-from Members m
-inner join
-MemberAddresses ma
-on m.MemberID = ma.MemberID
+SELECT CONCAT(FirstName, ', ', LastName) AS [Member's Full Name], a.AddressLine1, a.AddressLine2,
+			a.City, a.StateProvince, a.ZipCode, m.Phone, m.Email
+FROM Members m
+INNER JOIN MemberAddresses a 
+ON m.MemberID = a.MemberID
 GO
 
-CREATE VIEW vwMemberEmailList
+---An e-mail list
+CREATE VIEW MemberEmailList
 AS
-select concat(lastname, ', ', firstname) [Member Name], Email
-from Members
+SELECT CONCAT (Firstname, ', ', Lastname) AS [Member's Full Name], Email
+FROM Members
 GO
 
-CREATE VIEW vwMemberMonthlyBirthdays
+-- A list of members who are celebrating their birthday this month
+CREATE VIEW MemberBirthdays
 AS
-select concat(lastname, ', ', firstname) [Member Name],  BirthDate
-from Members
-where DATENAME(month, birthdate) = DATENAME(month, getdate())
+SELECT CONCAT (Firstname, ', ', Lastname) [Member's Full Name],  BirthDate
+FROM Members
+WHERE DATENAME(month, Birthdate) = DATENAME(month, getdate())
 GO
 
-select CCardID ,SUM(Amount) [Charge Per Month]
- from CCTransactions
-where DATENAME(month, transactiondate) = DATENAME(Month, getdate())
-group by CCardID
-order by CCardID
+-- Identify expired credit cards
+CREATE VIEW ExpiredCards
+AS
+SELECT *
+FROM MembersCCPayment
+WHERE CardExpiration < GETDATE()
+
+			---------Stored Procedures----------
+
+--- The monthly income from member renewals
+GO
+
+CREATE PROCEDURE sp_RenewalIncome
+	
+	@StartDate date,
+	@EndDate date
+	AS
+	BEGIN
+SELECT sum (t.Amount) [Income]
+FROM CCTransactions t
+WHERE t.TransactionDate between @StartDate and @EndDate
+
+END 
+
+GO
+
+/* test---- exec sp_RenewalIncome '2016-01-15', '2016-01-28' */
+
+
+--Member sign-ups per month over a given time
+GO
+CREATE PROCEDURE sp_SignUpCount
+	
+	@StartDate date,
+	@EndDate date
+	AS
+	BEGIN
+SELECT COUNT (memberid) [Signup Count]
+FROM Members
+WHERE JoinDate between @StartDate and @EndDate
+
+END 
+GO
+
+/* exec sp_SignUpCount '2016-03-01', '2016-03-31' */
+
+
+---Attendance per event over a given time
+GO
+
+CREATE PROCEDURE sp_EventAttendance
+	
+	@StartDate date,
+	@EndDate date
+	AS
+	BEGIN
+SELECT e.EventID, count(memberid) [Attendence], e.EventName, e.EventDate
+FROM MemberEvents a
+INNER JOIN [Events] e
+ON e.EventID = a.EventID
+WHERE e.EventDate BETWEEN @StartDate AND @EndDate
+GROUP BY e.EventID, e.EventName, e.EventDate
+
+END 
+GO
+
+
+
+
+
+
+
 
