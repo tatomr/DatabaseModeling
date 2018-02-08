@@ -31,11 +31,13 @@ Phone varchar(25) not null,
 Gender varchar(10) not null,
 JoinDate date not null,
 BirthDate date not null,
-Subscription varchar (25)not null, 
+Subscription varchar (25), 
 SubscriptionID int not null,
 CurrentFlag bit not null
 PRIMARY KEY (MemberID),
-CONSTRAINT FK_Subscriptionlevels FOREIGN KEY (SubscriptionID) REFERENCES SubscriptionLevels(SubscriptionID)
+CONSTRAINT FK_Subscriptionlevels FOREIGN KEY (SubscriptionID) REFERENCES SubscriptionLevels(SubscriptionID),
+CHECK (Subscription in ('Monthly', 'Quarterly', 'Yearly', 'Biennial'))
+
 )
 
 
@@ -48,7 +50,7 @@ AddressLine2 varchar(50),
 City varchar(35) not null,
 StateProvince varchar(25) not null,
 ZipCode varchar(15) not null,
-AddressType int not null,
+AddressType nvarchar(75) not null,
 PRIMARY KEY (AddressID),
 CONSTRAINT FK_MembersAddresses FOREIGN KEY (MemberID) REFERENCES Members(MemberID)
 )
@@ -86,17 +88,6 @@ CONSTRAINT FK_CCTransactions FOREIGN KEY (CCardID) REFERENCES MembersCCPayment(C
 CHECK (CCResultCode in ('Approved','Declined','Invalid Card'))
 )
 
-CREATE TABLE AccountCharges
-(
-ChargeID int not null IDENTITY (1,1),
-MemberID int not null,
-ChargeDate date not null,
-Amount money not null,
-PaymentDate date not null,
-PaymentMethod varchar (25),
-PRIMARY KEY (ChargeID),
-CONSTRAINT FK_AccountCharges FOREIGN KEY (MemberID) REFERENCES Members (MemberID)
-)
 
 CREATE TABLE Host
 (
@@ -136,6 +127,7 @@ EventDate date not null,
 StartTime time(1) not null,
 EndTime time(1) not null,
 EventTitle varchar(1000) not null,
+Lecturer varchar (25) not null,
 Discription varchar (256) not null, 
 Comments varchar(1000),
 PRIMARY KEY (EventID),
@@ -160,7 +152,7 @@ VALUES ('2 Year Plan', 189.00), ('1 Year Plan', 99.00), ('Quarterly', 27.00), ('
 
 
 
-INSERT INTO Members (FirstName, MiddleName, LastName, Email, Phone, Gender, JoinDate, BirthDate, Subsciption, SubscriptionID, CurrentFlag)
+INSERT INTO Members (FirstName, MiddleName, LastName, Email, Phone, Gender, JoinDate, BirthDate, Subscription, SubscriptionID, CurrentFlag)
 	VALUES 
 			('Otis',	'Brooke',	'Fallon',	'bfallon0@artisteer.com',	'818-873-3863',	'Male',	'2017-04-07', '1971-06-29','Monthly' ,'4', '1'), 
 			('Katee',	'Virgie',	'Gepp',	'vgepp1@nih.gov',	'503-689-8066',	'Female',	'2017-11-29', '1972-04-03', 'Monthly', '4', '1'),
@@ -180,21 +172,21 @@ INSERT INTO Members (FirstName, MiddleName, LastName, Email, Phone, Gender, Join
 
 INSERT INTO MemberAddresses (MemberID, AddressLine1, AddressLine2, City, StateProvince, ZipCode, AddressType)
 	VALUES 
-			('1', '020 New Castle Way',	null,	'Port Washington',	'New York',	'11054', '3'),
-			('2', '8 Corry Parkway', null,	'Newton',	'Massachusetts',	'2458',  '3'),
-			('3', '39426 Stone Corner Drive',	null,	'Peoria',	'Illinois',	'61605', '3'),
-			('4', '921 Granby Junction',	null,	'Oklahoma City',	'Oklahoma',	'73173', '3'),
-			('5', '77 Butternut Parkway',	null,	'Saint Paul',	'Minnesota',	'55146', '3'),
-			('6', '821 Ilene Drive',	null,	'Odessa',	'Texas',	'79764', '3'),
-			('7', '1110 Johnson Court',	null,	'Rochester',	'New York',	'14624', '3'),
-			('8', '6 Canary Hill',	null,	'Tallahassee',	'Florida',	'32309', '3'),
-			('9', '9 Buhler Lane',	null,	'Bismarck',	'North Dakota',	'58505', '3'),
-			('10', '99 Northwestern Pass',	null,	'Midland',	'Texas',	'79710', '3'),
-			('11', '69 Spenser Hill',	null,	'Provo',	'Utah',	'84605','3'),
-			('12', '3234 Kings Court',	null,	'Tacoma',	'Washington',	'98424', '3'),
-			('13', '3 Lakewood Gardens Circle',	null,	'Columbia',	'South Carolina',	'29225','3'),
-			('14', '198 Muir Parkway',	null,	'Fairfax',	'Virginia',	'22036', '3'),
-			('15', '258 Jenna Drive',	null,	'Pensacola',	'Florida',	'32520', '3')
+			('1', '020 New Castle Way',	null,	'Port Washington',	'New York',	'11054', 'Mailing'),
+			('2', '8 Corry Parkway', null,	'Newton',	'Massachusetts',	'2458',  'Mailing'),
+			('3', '39426 Stone Corner Drive',	null,	'Peoria',	'Illinois',	'61605', 'Mailing'),
+			('4', '921 Granby Junction',	null,	'Oklahoma City',	'Oklahoma',	'73173', 'Mailing'),
+			('5', '77 Butternut Parkway',	null,	'Saint Paul',	'Minnesota',	'55146', 'Mailing'),
+			('6', '821 Ilene Drive',	null,	'Odessa',	'Texas',	'79764', 'Mailing'),
+			('7', '1110 Johnson Court',	null,	'Rochester',	'New York',	'14624', 'Mailing'),
+			('8', '6 Canary Hill',	null,	'Tallahassee',	'Florida',	'32309', 'Mailing'),
+			('9', '9 Buhler Lane',	null,	'Bismarck',	'North Dakota',	'58505', 'Mailing'),  
+			('10', '99 Northwestern Pass',	null,	'Midland',	'Texas',	'79710', 'Mailing'),
+			('11', '69 Spenser Hill',	null,	'Provo',	'Utah',	'84605','Mailing'),
+			('12', '3234 Kings Court',	null,	'Tacoma',	'Washington',	'98424', 'Mailing'),
+			('13', '3 Lakewood Gardens Circle',	null,	'Columbia',	'South Carolina',	'29225','Mailing'),
+			('14', '198 Muir Parkway',	null,	'Fairfax',	'Virginia',	'22036', 'Mailing'),
+			('15', '258 Jenna Drive',	null,	'Pensacola',	'Florida',	'32520', 'Mailing')
 
 INSERT INTO MemberInterest (MemberID, Interest)
 	VALUES 
@@ -341,100 +333,6 @@ INSERT INTO CCTransactions (CCardID, TransactionDate, Amount, CCResultCode)
 			('112',	'2016-04-14',	'27',	'Approved'),
 			('114',	'2016-04-15',	'9.99',	'Approved')
 
-/*INSERT INTO Accountchages (CC, TransactionDate, Amount, CCResultCode)
-	VALUES  ('105',	'2016-01-15',	'9.99',	'Approved'),
-		    ('105',	'2016-01-16',	'9.99',	'Approved'),
-			('105',	'2016-01-17',	'9.99',	'Approved'),
-			('113',	'2016-01-18',	'99',	'Approved'),
-			('105',	'2016-01-19',	'9.99',	'Approved'),
-			('113',	'2016-01-20',	'99',	'Approved'),
-			('112',	'2016-01-21',	'27',	'Approved'),
-			('105',	'2016-01-22',	'9.99',	'Approved'),
-			('105',	'2016-01-23',	'9.99',	'Approved'),
-			('105',	'2016-01-24',	'9.99',	'Approved'),
-			('112',	'2016-01-25',	'27',	'Approved'),
-			('105',	'2016-01-26',	'9.99',	'Approved'),
-			('108',	'2016-01-27',	'99',	'Approved'),
-			('105',	'2016-01-28',	'9.99',	'Approved'),
-			('105',	'2016-01-29',	'9.99',	'Approved'),
-			('112',	'2016-01-30',	'27',	'Approved'),
-			('105',	'2016-01-31',	'9.99',	'Approved'),
-			('109',	'2016-02-01',	'99',	'Approved'),
-			('105',	'2016-02-02',	'9.99',	'Approved'),
-			('105',	'2016-02-03',	'9.99',	'Approved'),
-			('112',	'2016-02-04',	'27',	'Approved'),
-			('114',	'2016-02-05',	'9.99',	'Approved'),
-			('105',	'2016-02-06',	'9.99',	'Approved'),
-			('103',	'2016-02-07',	'27',	'Approved'),
-			('114',	'2016-02-08',	'9.99',	'Approved'),
-			('106',	'2016-02-09',	'99',	'Approved'),
-			('105',	'2016-02-10',	'9.99',	'Approved'),
-			('111',	'2016-02-11',	'9.99',	'Approved'),
-			('114',	'2016-02-12',	'9.99',	'Approved'),
-			('101',	'2016-02-13',	'9.99',	'Approved'),
-			('105',	'2016-02-14',	'9.99',	'Approved'),
-			('111',	'2016-02-15',	'9.99',	'Approved'),
-			('112',	'2016-02-16',	'27',	'Approved'),
-			('114',	'2016-02-17',	'9.99',	'Approved'),
-			('101',	'2016-02-18',	'9.99',	'Approved'),
-			('105',	'2016-02-19',	'9.99',	'Approved'),
-			('111',	'2016-02-20',	'9.99',	'Approved'),
-			('103',	'2016-02-21',	'27',	'Approved'),
-			('114',	'2016-02-22',	'9.99',	'Approved'),
-			('101',	'2016-02-23',	'9.99',	'Declined'),
-			('101',	'2016-02-24',	'9.99',	'Approved'),
-			('105',	'2016-02-25',	'9.99',	'Approved'),
-			('111',	'2016-02-26',	'9.99',	'Approved'),
-			('114',	'2016-02-27',	'9.99',	'Approved'),
-			('101',	'2016-02-28',	'9.99',	'Approved'),
-			('105',	'2016-02-29',	'9.99',	'Approved'),
-			('111',	'2016-03-01',	'9.99',	'Declined'),
-			('111',	'2016-03-02',	'9.99',	'Approved'),
-			('112',	'2016-03-03',	'27',	'Approved'),
-			('114',	'2016-03-04',	'9.99',	'Approved'),
-			('101',	'2016-03-05',	'9.99',	'Approved'),
-			('107',	'2016-03-06',	'9.99',	'Approved'),
-			('105',	'2016-03-07',	'9.99',	'Approved'),
-			('111',	'2016-03-08',	'9.99',	'Approved'),
-			('103',	'2016-03-09',	'27',	'Approved'),
-			('114',	'2016-03-10',	'9.99',	'Approved'),
-			('101',	'2016-03-11',	'9.99',	'Approved'),
-			('107',	'2016-03-12',	'9.99',	'Approved'),
-			('108',	'2016-03-13',	'99',	'Approved'),
-			('105',	'2016-03-14',	'9.99',	'Approved'),
-			('111',	'2016-03-15',	'9.99',	'Approved'),
-			('114',	'2016-03-16',	'9.99',	'Approved'),
-			('115',	'2016-03-17',	'9.99',	'Invalid Card'),
-			('101',	'2016-03-18',	'9.99',	'Approved'),
-			('107',	'2016-03-19',	'9.99',	'Approved'),
-			('105',	'2016-03-20',	'9.99',	'Approved'),
-			('111',	'2016-03-21',	'9.99',	'Approved'),
-			('112',	'2016-03-22',	'27',	'Approved'),
-			('114',	'2016-03-23',	'9.99',	'Approved'),
-			('104',	'2016-03-24',	'27',	'Approved'),
-			('101',	'2016-03-25',	'9.99',	'Approved'),
-			('107',	'2016-03-26',	'9.99',	'Approved'),
-			('105',	'2016-03-27',	'9.99',	'Approved'),
-			('111',	'2016-03-28',	'9.99',	'Approved'),
-			('103',	'2016-03-29',	'27',	'Declined'),
-			('103',	'2016-03-30',	'27',	'Approved'),
-			('114',	'2016-03-31',	'9.99',	'Approved'),
-			('102',	'2016-04-01',	'9.99',	'Approved'),
-			('101',	'2016-04-02',	'9.99',	'Approved'),
-			('107',	'2016-04-03',	'9.99',	'Approved'),
-			('105',	'2016-04-04',	'9.99',	'Approved'),
-			('111',	'2016-04-05',	'9.99',	'Approved'),
-			('110',	'2016-04-06',	'9.99',	'Approved'),
-			('114',	'2016-04-07',	'9.99',	'Approved'),
-			('102',	'2016-04-08',	'9.99',	'Approved'),
-			('101',	'2016-04-09',	'9.99',	'Approved'),
-			('107',	'2016-04-10',	'9.99',	'Approved'),
-			('105',	'2016-04-11',	'9.99',	'Approved'),
-			('111',	'2016-04-12',	'9.99',	'Approved'),
-			('110',	'2016-04-13',	'9.99',	'Approved'),
-			('112',	'2016-04-14',	'27',	'Approved'),
-			('114',	'2016-04-15',	'9.99',	'Approved')*/
-
 
 
 INSERT INTO Host (FirstName, MiddleName, LastName, Email, Phone, Gender, StartDate, CurrentFlag, BirthDate)
@@ -451,12 +349,12 @@ INSERT INTO HostAddress (HostID, AddressLine1, AddressLIne2, City, StateProvince
 			(4, '903 Highway 441', null, 'Ocala', 'Florida', '34470'),
 			(5, '1337 Programming Street', null, 'Ocala', 'Florida', '34470')
 
-INSERT INTO [Events] (HostID, EventName, EventDate, StartTime, EndTime, EventTitle, Discription, Comments)
-	VALUES ('1',	'The History of Human Emotions',	'2017-01-12',	'12:00',	'2:00',	'History of human emotions',' A brief view of Westen Philosophy of Emotions', 'I was impressed with Plato''s philosophy of human emotions'),
-('2',	'How Great Leaders Inspire Action',	'2017-02-22',	'12:00',	'1:00',	'How great leaders inspire action', 'I introdution to critical business skill for the 21 century','I thought the theory on Competative Advantage was an eye opener'),
-('3',	'The Puzzle of Motivation',	'2017-03-05',	'12:00',	'3:00',	'Motivational', 'How to maintain a positive attitude in the face of negative situations', 'Motivate people'),
-('4',	'Your Elusive Creative Genius',	'2017-04-16',	'12:00',	'2:00',	'Learn to become a genius!', 'A brief intoroduction into Aristotle''s Logic Methods', 'Thinking Skills'),
-('5',	'Why are Programmers So Smart?',	'2017-05-01',	'12:00',	'2:30',	'Overview of how smart programmers are', 'An introduction to skills needed for success in a programming career','Programmers are awesome')
+INSERT INTO [Events] (HostID, EventName, EventDate, StartTime, EndTime, EventTitle, Lecturer, Discription, Comments)
+	VALUES ('1',	'The History of Human Emotions',	'2017-01-12',	'12:00',	'2:00',	'History of human emotions','Tiffany Watt Smith',' A brief view of Westen Philosophy of Emotions', 'I was impressed with Plato''s philosophy of human emotions'),
+('2',	'How Great Leaders Inspire Action',	'2017-02-22',	'12:00',	'1:00',	'How great leaders inspire action','Simon Sinek', 'I introdution to critical business skill for the 21 century','I thought the theory on Competative Advantage was an eye opener'),
+('3',	'The Puzzle of Motivation',	'2017-03-05',	'12:00',	'3:00',	'Motivational', 'Dan Pink', 'How to maintain a positive attitude in the face of negative situations', 'Motivate people'),
+('4',	'Your Elusive Creative Genius',	'2017-04-16',	'12:00',	'2:00',	'Learn to become a genius!','Elizabeth Gilbert', 'A brief intoroduction into Aristotle''s Logic Methods', 'Thinking Skills'),
+('5',	'Why are Programmers So Smart?',	'2017-05-01',	'12:00',	'2:30',	'Overview of how smart programmers are','Andrew Comeau', 'An introduction to skills needed for success in a programming career','Programmers are awesome')
 
 INSERT INTO MemberEvents (EventID, MemberID, Rating)
 	VALUES	(1, 1, 1),
@@ -572,6 +470,21 @@ SELECT *
 FROM MembersCCPayment
 WHERE CardExpiration < GETDATE()
 
+-- Method is needed to scan for current members
+
+CREATE VIEW Subscription_Renewals
+ AS 
+ select M.MemberID, M.Firstname, M.Lastname, M.Joindate,s.[Description], s.RenewalAmtPrice, MCCI.CCID
+ FROM Members M
+ INNER JOIN SubscriptionLevels s
+ ON s.SubscriptionID = m.SubscriptionID
+  INNER JOIN MembersCCPayment MCCI
+ ON M.MemberID = MCCI.Memberid
+ WHERE S.Active = 1 
+ and datepart(day, Joindate) = datepart(day, getdate()) 
+ AND S.[description] = 'Monthly'
+
+
 			---------Stored Procedures----------
 
 --- The monthly income from member renewals
@@ -630,11 +543,3 @@ GROUP BY e.EventID, e.EventName, e.EventDate
 
 END 
 GO
-
-
-
-
-
-
-
-
