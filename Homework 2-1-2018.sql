@@ -14,8 +14,8 @@ exec sp_changedbowner 'sa'
 CREATE TABLE SubscriptionLevels
 (
 SubscriptionID int not null IDENTITY(1, 1),
-[Description] varchar(75) not null,
-RenewalAmtPrice smallmoney not null
+SubsciptionLevel varchar(75) not null,
+RenewalAmtPrice smallmoney not null,
 PRIMARY KEY (SubscriptionID)
 )
 
@@ -147,8 +147,8 @@ CONSTRAINT FK_MemberEvents2 FOREIGN KEY (MemberID) REFERENCES Members (MemberID)
 
 --==============================================INSERTS========================================================--
 
-INSERT INTO SubscriptionLevels ([Description], RenewalAmtPrice)
-VALUES ('2 Year Plan', 189.00), ('1 Year Plan', 99.00), ('Quarterly', 27.00), ('Monthly', 9.99)
+INSERT INTO SubscriptionLevels (SubsciptionLevel, RenewalAmtPrice)
+VALUES ('Monthly', 9.99),('Quarterly', 27.00),('Annually', 99.00),('Biennial',189.00)
 
 
 
@@ -472,17 +472,6 @@ WHERE CardExpiration < GETDATE()
 
 -- Method is needed to scan for current members
 
-CREATE VIEW Subscription_Renewals
- AS 
- select M.MemberID, M.Firstname, M.Lastname, M.Joindate,s.[Description], s.RenewalAmtPrice, MCCI.CCID
- FROM Members M
- INNER JOIN SubscriptionLevels s
- ON s.SubscriptionID = m.SubscriptionID
-  INNER JOIN MembersCCPayment MCCI
- ON M.MemberID = MCCI.Memberid
- WHERE S.Active = 1 
- and datepart(day, Joindate) = datepart(day, getdate()) 
- AND S.[description] = 'Monthly'
 
 
 			---------Stored Procedures----------
